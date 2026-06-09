@@ -28,4 +28,5 @@ Create `.env` file and add to it: `DISCORD_TOKEN='YOUR-TOKEN'`
 After activating the virtual environment:
 
   `pip install --upgrade pip`
+  
   `pip install -r requirements.txt`
