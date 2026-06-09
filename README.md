@@ -15,18 +15,20 @@ Create `.env` file and add to it: `DISCORD_TOKEN='YOUR-TOKEN'`
 
 ### Linux / macOS
   `python3 -m venv gym-bot-env`
-  
-  `source venv/bin/activate`
+
+  `source gym-bot-env/bin/activate`
 
 ### Windows (CMD)
-  `python -m venv venv`
-  
-  `venv\Scripts\activate`
+  `python -m venv gym-bot-env`
+
+  `gym-bot-env\Scripts\activate`
 
 ## Install Dependencies
 
 After activating the virtual environment:
 
   `pip install --upgrade pip`
-  
-  `pip install -r requirements.txt`
+
+  `pip install discord.py`
+
+  `pip install python-dotenv`
