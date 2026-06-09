@@ -15,10 +15,12 @@ Create `.env` file and add to it: `DISCORD_TOKEN='YOUR-TOKEN'`
 
 ### Linux / macOS
   `python3 -m venv gym-bot-env`
+  
   `source venv/bin/activate`
 
 ### Windows (CMD)
   `python -m venv venv`
+  
   `venv\Scripts\activate`
 
 ## Install Dependencies
