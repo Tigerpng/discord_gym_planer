@@ -7,6 +7,5 @@ services:
     build:
       context: .
 
-
 volumes:
   bot_db:
