@@ -1,7 +1,7 @@
 services:
   bot:
     volumes:
-      - bot_db:/app
+      - bot_db:/app/data
     environment:
       DISCORD_TOKEN: ${DISCORD_TOKEN}
     build:
