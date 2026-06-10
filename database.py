@@ -3,7 +3,7 @@ from typing import List
 
 
 class Database:
-    def __init__(self, db_path: str = "gym_bot.db"):
+    def __init__(self, db_path: str = "./data/gym_bot.db"):
         self.db_path = db_path
         self._init_db()
 
