@@ -2,6 +2,17 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 from typing import List
+import datetime as dt
+
+WEEKDAYS = [
+    "Montag",
+    "Dienstag",
+    "Mittwoch",
+    "Donnerstag",
+    "Freitag",
+    "Samstag",
+    "Sonntag"
+]
 
 
 # ----------------------------
@@ -12,8 +23,13 @@ def parse_list(value: str) -> List[str]:
 
 
 def validate_date(date: str) -> bool:
-    return len(date) == 5 and date[2] == "." and date.replace(".", "").isdigit()
-
+    try:
+      year =  dt.datetime.today().year
+      date =  date + "." + str(year)
+      day = dt.datetime.strptime(date ,'%d.%m.%Y')
+      return True
+    except:
+        return False
 
 def validate_time(time: str) -> bool:
     try:
@@ -29,20 +45,26 @@ def validate_time(time: str) -> bool:
 class PlanRenderer:
     @staticmethod
     def build(event, participants, drivers):
+        
+        event[3]
+        year =  dt.datetime.today().year
+        date =  event[3] + "." + str(year)
+        day = dt.datetime.strptime(date ,'%d.%m.%Y')
+
         embed = discord.Embed(
-            title="📅 TERMIN",
-            description=f"**Datum:** {event[3]}\n**Zeit:** {event[4]}",
+            title=f"📅 Termin für {WEEKDAYS[day.weekday()]}",
+            description=f"**Zeit:** {event[4]} Uhr\n**Datum:** {event[3]}\n",
             color=0x00AAFF
         )
 
         embed.add_field(
-            name="👍 Teilnehmer",
+            name="👍 Teilnehmer:",
             value="\n".join(participants) if participants else "-",
             inline=False
         )
 
         embed.add_field(
-            name="🚗 Fahrer",
+            name="🚗 Fahrer:",
             value="\n".join(drivers) if drivers else "-",
             inline=False
         )
