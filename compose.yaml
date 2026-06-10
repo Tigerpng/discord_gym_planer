@@ -1,0 +1,12 @@
+services:
+  bot:
+    volumes:
+      - bot_db:/app
+    environment:
+      DISCORD_TOKEN: ${DISCORD_TOKEN}
+    build:
+      context: .
+
+
+volumes:
+  bot_db:

@@ -5,6 +5,10 @@ Simple Discord bot to help plan gym visits with friends.
 
 Create `.env` file and add to it: `DISCORD_TOKEN='YOUR-TOKEN'`
 
+## Run with docker
+
+  `docker compose up --build`
+
 ## Required Libs
 
 * `discord.py`
