@@ -20,7 +20,7 @@ class Planbot(commands.Bot):
         await self.tree.sync()
         events =  self.db.get_all_events()
         for i in events:
-          self.add_view(PlanCog.PlanView(i[0]))
+          self.add_view(PlanCog.PlanView(i))
 
     async def on_ready(self):
         print(f"Bot online als {self.user}")

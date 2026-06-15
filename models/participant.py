@@ -1,6 +1,6 @@
 from sqlobject import *
 
-class Event(SQLObject):
+class Participant(SQLObject):
   name = StringCol()
   driver = BoolCol()
-  event = ForeignKey('User')
+  event = ForeignKey('Event')
