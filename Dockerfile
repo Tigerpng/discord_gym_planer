@@ -9,7 +9,8 @@ WORKDIR /app
 # Install dependencies
 RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir discord.py \
-    && pip install --no-cache-dir python-dotenv
+    && pip install --no-cache-dir python-dotenv \
+    && pip install --no-cache-dir sqlobject
 
 # Copy project files
 COPY . /app
