@@ -3,6 +3,7 @@ from discord import app_commands
 from discord.ext import commands
 from typing import List
 import datetime as dt
+from models.event import *
 
 WEEKDAYS = [
     "Montag",
@@ -44,16 +45,25 @@ def validate_time(time: str) -> bool:
 # ----------------------------
 class PlanRenderer:
     @staticmethod
-    def build(event, participants, drivers):
-        
-        event[3]
-        year =  dt.datetime.today().year
-        date =  event[3] + "." + str(year)
-        day = dt.datetime.strptime(date ,'%d.%m.%Y')
+    def build(event):
+
+        participants = [
+            p.name
+            for p in event.participants()
+        ]
+
+        drivers = [
+            p.name
+            for p in event.participants()
+            if p.driver
+        ]
 
         embed = discord.Embed(
-            title=f"📅 Termin für {WEEKDAYS[day.weekday()]}",
-            description=f"**Zeit:** {event[4]} Uhr\n**Datum:** {event[3]}\n",
+            title=f"📅 Termin für {WEEKDAYS[event.date.weekday()]}",
+            description=(
+                f"**Zeit:** {event.time.strftime('%H:%M')} Uhr\n"
+                f"**Datum:** {event.date.strftime('%d.%m.%Y')}"
+            ),
             color=0x00AAFF
         )
 
@@ -89,95 +99,109 @@ class PlanCog(commands.Cog):
         if not validate_time(time):
             return await interaction.response.send_message("❌ Zeit falsch (HH:MM)", ephemeral=True)
 
-        event_id = self.bot.db.create_event(interaction.channel_id, date, time)
+        year =  dt.datetime.today().year
+        date =  date + "." + str(year)
+        new_date = dt.datetime.strptime(date ,'%d.%m.%Y')
 
-        event = self.bot.db.get_event(event_id)
+        new_time = dt.datetime.strptime(time ,'%H:%M')
 
-        embed = PlanRenderer.build(event, [], [])
+        event = self.bot.db.create_event(interaction.channel_id, new_date, new_time)
 
-        view = self.PlanView(event_id)
+        embed = PlanRenderer.build(event)
+
+        view = self.PlanView(event)
 
         msg = await interaction.channel.send(embed=embed, view=view)
 
-        self.bot.db.update_message(event_id, msg.id)
+        self.bot.db.update_message(event.id, msg.id)
 
         await interaction.response.send_message("✅ erstellt", ephemeral=True)
 
     # ---------------- PERSISTENT VIEW ----------------
     class PlanView(discord.ui.View):
-        def __init__(self, event_id: int):
+        def __init__(self, event):
             super().__init__(timeout=None)
-            self.event_id = event_id
+            self.event_id = event.id
 
         # ---------------- Resolver ----------------
         def get_data(self, bot):
-            event = bot.db.get_event(self.event_id)
-            participants = parse_list(event[5])
-            drivers = parse_list(event[6])
-            return event, participants, drivers
+            return bot.db.get_event(self.event_id)
 
         def save(self, bot, participants, drivers):
             bot.db.update(self.event_id, participants, drivers)
 
-        async def refresh(self, interaction: discord.Interaction):
+        async def refresh(self, interaction):
+        
             bot = interaction.client
-            event, participants, drivers = self.get_data(bot)
-      
-            embed = PlanRenderer.build(event, participants, drivers)
-            await interaction.response.edit_message(embed=embed, view=self)
+
+            event = self.get_data(bot)
+
+            await interaction.response.edit_message(
+                embed=PlanRenderer.build(event),
+                view=self
+            )
 
         # ---------------- BUTTONS ----------------
 
-        @discord.ui.button(emoji="👍", style=discord.ButtonStyle.success, custom_id="plan:join")
-        async def join(self, interaction: discord.Interaction, button: discord.ui.Button):
-        
+        @discord.ui.button(
+            emoji="👍",
+            style=discord.ButtonStyle.success,
+            custom_id="plan:join"
+        )
+        async def join(
+            self,
+            interaction: discord.Interaction,
+            button: discord.ui.Button
+        ):
+
             bot = interaction.client
-            event, participants, drivers = self.get_data(bot)
 
-            user = interaction.user.name
+            bot.db.join_event(
+                self.event_id,
+                interaction.user.name
+            )
 
-            if user in participants:
-                participants.remove(user)
-            else:
-                participants.append(user)
-            
-            if user in drivers:
-              drivers.remove(user)
-
-            self.save(bot, participants, drivers)
             await self.refresh(interaction)
 
-        @discord.ui.button(emoji="🚗", style=discord.ButtonStyle.primary, custom_id="plan:driver")
-        async def driver(self, interaction: discord.Interaction, button: discord.ui.Button):
-          
+
+        @discord.ui.button(
+            emoji="🚗",
+            style=discord.ButtonStyle.primary,
+            custom_id="plan:driver"
+        )
+        async def driver(
+            self,
+            interaction: discord.Interaction,
+            button: discord.ui.Button
+        ):
+
             bot = interaction.client
-            event, participants, drivers = self.get_data(bot)
 
-            user = interaction.user.name
+            bot.db.toggle_driver(
+                self.event_id,
+                interaction.user.name
+            )
 
-            if user not in participants:
-              participants.append(user)
-
-            if user in drivers:
-                drivers.remove(user)
-            else:
-                drivers.append(user)
-            
-            self.save(bot, participants, drivers)
             await self.refresh(interaction)
 
-        @discord.ui.button(emoji="👎", style=discord.ButtonStyle.danger, custom_id="plan:decline")
-        async def decline(self, interaction: discord.Interaction, button: discord.ui.Button):
+        @discord.ui.button(
+            emoji="👎",
+            style=discord.ButtonStyle.danger,
+            custom_id="plan:decline"
+        )
+        async def decline(
+            self,
+            interaction: discord.Interaction,
+            button: discord.ui.Button
+        ):
 
             bot = interaction.client
-            event, participants, drivers = self.get_data(bot)
 
-            user = interaction.user.name
-        
-            participants = [p for p in participants if p != user]
-            drivers = [d for d in drivers if d != user]
+            bot.db.leave_event(
+                self.event_id,
+                interaction.user.name
+            )
 
-            self.save(bot, participants, drivers)
             await self.refresh(interaction)
 
 
