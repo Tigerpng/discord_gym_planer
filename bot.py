@@ -18,9 +18,9 @@ class Planbot(commands.Bot):
         guild = discord.Object(id=707177039190556683)
         self.tree.copy_global_to(guild=guild)
         await self.tree.sync()
-        events =  self.db.get_all_events()
+        events =  self.db.get_all_not_expired()
         for i in events:
-          self.add_view(PlanCog.PlanView(i))
+          self.add_view(PlanCog.PlanView(i), message_id=i.message_id)
 
     async def on_ready(self):
         print(f"Bot online als {self.user}")

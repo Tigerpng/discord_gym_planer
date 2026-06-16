@@ -2,6 +2,7 @@ from sqlobject import *
 from datetime import date, time
 from typing import List
 from pathlib import Path
+import datetime as dt
 
 from models.event import Event
 from models.participant import Participant
@@ -56,6 +57,9 @@ class Database:
 
     def get_all_events(self) -> list[Event]:
         return list(Event.select())
+
+    def get_all_not_expired(self):
+        return Event.select(Event.q.date >= dt.datetime.today())
 
     def update_message(self, event_id: int, message_id: int):
         event = Event.get(event_id)
